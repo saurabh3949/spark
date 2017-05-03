@@ -132,8 +132,12 @@ class IDFModel private[ml] (
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
     // TODO: Make the idfModel.transform natively in ml framework to avoid extra conversion.
-    val idf = udf { vec: Vector => idfModel.transform(OldVectors.fromML(vec)).asML }
+    val idf = udf { transformInstance _ }
     dataset.withColumn($(outputCol), idf(col($(inputCol))))
+  }
+
+  def transformInstance(vec: Vector) : Vector = {
+    idfModel.transform(OldVectors.fromML(vec)).asML
   }
 
   @Since("1.4.0")
